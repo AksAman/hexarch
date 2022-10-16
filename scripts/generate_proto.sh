@@ -1,6 +1,6 @@
 # !/usr/bin/bash
 
-grpc_dir="internal/adpaters/framework/left/grpc"
+grpc_dir="internal/adapters/framework/left/grpc"
 src_proto_dir="$grpc_dir/proto"
 
 

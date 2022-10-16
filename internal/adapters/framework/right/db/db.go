@@ -3,12 +3,21 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/AksAman/hexarch/utils"
 	sq "github.com/Masterminds/squirrel"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
+
+var (
+	logger *zap.SugaredLogger
+)
+
+func init() {
+	logger = utils.InitializeLogger("adapters.frameworks.right.db")
+}
 
 type Adapter struct {
 	db *sql.DB
@@ -20,25 +29,28 @@ func NewAdapter(driverName, dataSource string) (*Adapter, error) {
 	// connect
 	db, err := sql.Open(driverName, dataSource)
 	if err != nil {
-		log.Fatalf("error connecting to database: %v", err)
+		return nil, fmt.Errorf("error connecting to database: %v", err)
 	}
 
 	// test connection
+	logger.Debugf("pinging")
 	err = db.Ping()
 	if err != nil {
-		log.Fatalf("error pinging to database: %v", err)
+		return nil, fmt.Errorf("error pinging to database: %v", err)
 	}
+	logger.Debugf("db ping successful")
 
 	return &Adapter{
 		db: db,
 	}, nil
 }
 
-func (dbAdapter Adapter) CloseDBConnection() {
+func (dbAdapter Adapter) CloseDBConnection() error {
 	err := dbAdapter.db.Close()
 	if err != nil {
-		log.Fatalf("error closing database connection: %v", err)
+		return fmt.Errorf("error closing database connection: %v", err)
 	}
+	return nil
 }
 
 func (dbAdapter Adapter) AddToHistory(answer int32, operation string) error {
@@ -56,7 +68,7 @@ func (dbAdapter Adapter) AddToHistory(answer int32, operation string) error {
 		return err
 	}
 
-	fmt.Printf("queryStr Created: %q with args: %v\n", queryStr, args)
+	logger.Debugf("queryStr Created: %q with args: %v", queryStr, args)
 
 	_, err = dbAdapter.db.Exec(queryStr, args...)
 	if err != nil {

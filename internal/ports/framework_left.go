@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	hexpb "github.com/AksAman/hexarch/internal/adpaters/framework/left/grpc/pb"
+	hexpb "github.com/AksAman/hexarch/internal/adapters/framework/left/grpc/pb"
 )
 
 type GRPCPort interface {

@@ -5,22 +5,74 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/AksAman/hexarch/internal/adpaters/core/arithmetic"
+	"github.com/AksAman/hexarch/config"
+	"github.com/AksAman/hexarch/internal/adapters/app/api"
+	"github.com/AksAman/hexarch/internal/adapters/core/arithmetic"
+	gRPC "github.com/AksAman/hexarch/internal/adapters/framework/left/grpc"
+	"github.com/AksAman/hexarch/internal/adapters/framework/right/db"
 	"github.com/AksAman/hexarch/internal/ports"
+	"github.com/AksAman/hexarch/utils"
+	"go.uber.org/zap"
 )
 
-func main() {
+var (
+	logger    *zap.SugaredLogger
+	appConfig *config.Config
+)
 
-	// ports
-	var corePort ports.ArithmeticPort
+// ports
+var (
+	// domain/core ports
+	coreAdapter ports.ArithmeticPort
+	// application ports
+	appAdapter ports.APIPort
+	// framework ports
+	dbAdapter   ports.DBPort
+	gRPCAdapter ports.GRPCPort
+)
 
-	corePort = arithmetic.NewAdapter()
+func init() {
+	logger = utils.InitializeLogger("cmd.main")
 
-	res, err := corePort.Division(5, 2)
+	var err error
+	appConfig, err = config.LoadConfig()
 	if err != nil {
-		fmt.Println(err)
+		logger.Fatalf("failed to load config: %v", err)
 	}
-	fmt.Printf("res: %v\n", res)
+}
+
+func main() {
+	coreAdapter = createCoreAdapter()
+	dbAdapter = createDBAdapter()
+	appAdapter = createAppAdapter(coreAdapter, dbAdapter)
+	gRPCAdapter = createGRPCAdapter(appAdapter)
+
+	gRPCAdapter.Run()
+}
+
+func createCoreAdapter() ports.ArithmeticPort {
+	return arithmetic.NewAdapter()
+}
+
+func createAppAdapter(arithPort ports.ArithmeticPort, dbPort ports.DBPort) ports.APIPort {
+	return api.NewAdapter(arithPort, dbPort)
+}
+
+func createDBAdapter() ports.DBPort {
+	driverName := "postgres"
+	dataSourceName := appConfig.GetPGConnectionString()
+	logger.Debugf("dataSourceName: %q", dataSourceName)
+	logger.Debugf("driverName: %q", driverName)
+
+	var err error
+	dbPort, err := db.NewAdapter(driverName, dataSourceName)
+	if err != nil {
+		logger.Fatalf("failed to create db adapter: %v", err)
+	}
+	defer dbPort.CloseDBConnection()
+	return dbPort
+}
+
+func createGRPCAdapter(apiPort ports.APIPort) ports.GRPCPort {
+	return gRPC.NewAdapter(apiPort)
 }
