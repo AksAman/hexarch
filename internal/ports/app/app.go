@@ -1,4 +1,4 @@
-package ports
+package appPorts
 
 type APIPort interface {
 	GetAddition(a, b int32) (int32, error)

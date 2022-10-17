@@ -1,4 +1,4 @@
-package ports
+package corePorts
 
 // interface that our core adapter will implement
 type ArithmeticPort interface {

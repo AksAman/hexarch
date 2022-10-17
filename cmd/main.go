@@ -9,8 +9,12 @@ import (
 	"github.com/AksAman/hexarch/internal/adapters/app/api"
 	"github.com/AksAman/hexarch/internal/adapters/core/arithmetic"
 	gRPC "github.com/AksAman/hexarch/internal/adapters/framework/left/grpc"
-	"github.com/AksAman/hexarch/internal/adapters/framework/right/db"
-	"github.com/AksAman/hexarch/internal/ports"
+	"github.com/AksAman/hexarch/internal/adapters/framework/right/jsondb"
+	"github.com/AksAman/hexarch/internal/adapters/framework/right/pgdb"
+	appPorts "github.com/AksAman/hexarch/internal/ports/app"
+	corePorts "github.com/AksAman/hexarch/internal/ports/core"
+	leftFrameworkPorts "github.com/AksAman/hexarch/internal/ports/framework/left"
+	rightFrameworkPorts "github.com/AksAman/hexarch/internal/ports/framework/right"
 	"github.com/AksAman/hexarch/utils"
 	"go.uber.org/zap"
 )
@@ -23,12 +27,12 @@ var (
 // ports
 var (
 	// domain/core ports
-	coreAdapter ports.ArithmeticPort
+	coreAdapter corePorts.ArithmeticPort
 	// application ports
-	appAdapter ports.APIPort
+	appAdapter appPorts.APIPort
 	// framework ports
-	dbAdapter   ports.DBPort
-	gRPCAdapter ports.GRPCPort
+	dbAdapter   rightFrameworkPorts.DBPort
+	gRPCAdapter leftFrameworkPorts.GRPCPort
 )
 
 func init() {
@@ -43,36 +47,46 @@ func init() {
 
 func main() {
 	coreAdapter = createCoreAdapter()
-	dbAdapter = createDBAdapter()
+	dbAdapter = createPGDBAdapter()
+	// dbAdapter = createJSONDBAdapter()
+	defer dbAdapter.CloseDBConnection()
 	appAdapter = createAppAdapter(coreAdapter, dbAdapter)
 	gRPCAdapter = createGRPCAdapter(appAdapter)
 
 	gRPCAdapter.Run()
 }
 
-func createCoreAdapter() ports.ArithmeticPort {
+func createCoreAdapter() corePorts.ArithmeticPort {
 	return arithmetic.NewAdapter()
 }
 
-func createAppAdapter(arithPort ports.ArithmeticPort, dbPort ports.DBPort) ports.APIPort {
+func createAppAdapter(arithPort corePorts.ArithmeticPort, dbPort rightFrameworkPorts.DBPort) appPorts.APIPort {
 	return api.NewAdapter(arithPort, dbPort)
 }
 
-func createDBAdapter() ports.DBPort {
+func createPGDBAdapter() rightFrameworkPorts.DBPort {
 	driverName := "postgres"
-	dataSourceName := appConfig.GetPGConnectionString()
+	dataSourceName := appConfig.GetDBConnectionString()
 	logger.Debugf("dataSourceName: %q", dataSourceName)
 	logger.Debugf("driverName: %q", driverName)
 
 	var err error
-	dbPort, err := db.NewAdapter(driverName, dataSourceName)
+	dbPort, err := pgdb.NewAdapter(driverName, dataSourceName)
 	if err != nil {
 		logger.Fatalf("failed to create db adapter: %v", err)
 	}
-	defer dbPort.CloseDBConnection()
 	return dbPort
 }
 
-func createGRPCAdapter(apiPort ports.APIPort) ports.GRPCPort {
+func createJSONDBAdapter() rightFrameworkPorts.DBPort {
+	var err error
+	dbPort, err := jsondb.NewAdapter(appConfig.JSONDatabaseFilepath)
+	if err != nil {
+		logger.Fatalf("failed to create db adapter: %v", err)
+	}
+	return dbPort
+}
+
+func createGRPCAdapter(apiPort appPorts.APIPort) leftFrameworkPorts.GRPCPort {
 	return gRPC.NewAdapter(apiPort)
 }

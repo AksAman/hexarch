@@ -1,4 +1,4 @@
-package db
+package pgdb
 
 import (
 	"database/sql"
@@ -54,7 +54,8 @@ func (dbAdapter Adapter) CloseDBConnection() error {
 }
 
 func (dbAdapter Adapter) AddToHistory(answer int32, operation string) error {
-	queryStr, args, err := sq.Insert(TABLE_NAME).Columns(
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	queryStr, args, err := psql.Insert(TABLE_NAME).Columns(
 		"date",
 		"answer",
 		"operation",

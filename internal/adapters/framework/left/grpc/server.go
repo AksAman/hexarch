@@ -4,7 +4,7 @@ import (
 	"net"
 
 	hexpb "github.com/AksAman/hexarch/internal/adapters/framework/left/grpc/pb"
-	"github.com/AksAman/hexarch/internal/ports"
+	appPorts "github.com/AksAman/hexarch/internal/ports/app"
 	"github.com/AksAman/hexarch/utils"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -19,12 +19,12 @@ func init() {
 }
 
 type Adapter struct {
-	api ports.APIPort
+	api appPorts.APIPort
 	hexpb.UnimplementedArithmeticServiceServer
 }
 
 // constructor
-func NewAdapter(api ports.APIPort) *Adapter {
+func NewAdapter(api appPorts.APIPort) *Adapter {
 	return &Adapter{
 		api: api,
 	}

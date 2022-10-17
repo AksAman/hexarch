@@ -1,10 +1,13 @@
 package api
 
-import "github.com/AksAman/hexarch/internal/ports"
+import (
+	corePorts "github.com/AksAman/hexarch/internal/ports/core"
+	rightFrameworkPorts "github.com/AksAman/hexarch/internal/ports/framework/right"
+)
 
 type Adapter struct {
-	arith ports.ArithmeticPort
-	db    ports.DBPort
+	arith corePorts.ArithmeticPort
+	db    rightFrameworkPorts.DBPort
 }
 
 const (
@@ -15,7 +18,7 @@ const (
 )
 
 // constructor
-func NewAdapter(arith ports.ArithmeticPort, db ports.DBPort) *Adapter {
+func NewAdapter(arith corePorts.ArithmeticPort, db rightFrameworkPorts.DBPort) *Adapter {
 	return &Adapter{
 		arith: arith,
 		db:    db,

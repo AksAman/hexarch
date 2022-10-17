@@ -1,7 +1,7 @@
 // right ports/adapters for driven adapters
 // example: Database
 
-package ports
+package rightFrameworkPorts
 
 type DBPort interface {
 	CloseDBConnection() error

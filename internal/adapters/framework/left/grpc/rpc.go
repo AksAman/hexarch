@@ -19,6 +19,7 @@ func (rpcAdapter *Adapter) GetAddition(ctx context.Context, req *hexpb.Operation
 
 	answer, err := rpcAdapter.api.GetAddition(req.GetA(), req.GetB())
 	if err != nil {
+		logger.Warnf("error while calling api method: %v", err.Error())
 		return ans, status.Error(codes.Internal, err.Error())
 	}
 
@@ -39,6 +40,7 @@ func (rpcAdapter *Adapter) GetSubtraction(ctx context.Context, req *hexpb.Operat
 
 	answer, err := rpcAdapter.api.GetSubtraction(req.GetA(), req.GetB())
 	if err != nil {
+		logger.Warnf("error while calling api method: %v", err.Error())
 		return ans, status.Error(codes.Internal, err.Error())
 	}
 
@@ -59,6 +61,7 @@ func (rpcAdapter *Adapter) GetMultiplication(ctx context.Context, req *hexpb.Ope
 
 	answer, err := rpcAdapter.api.GetMultiplication(req.GetA(), req.GetB())
 	if err != nil {
+		logger.Warnf("error while calling api method: %v", err.Error())
 		return ans, status.Error(codes.Internal, err.Error())
 	}
 
@@ -79,6 +82,7 @@ func (rpcAdapter *Adapter) GetDivision(ctx context.Context, req *hexpb.Operation
 
 	answer, err := rpcAdapter.api.GetDivision(req.GetA(), req.GetB())
 	if err != nil {
+		logger.Warnf("error while calling api method: %v", err.Error())
 		return ans, status.Error(codes.Internal, err.Error())
 	}
 

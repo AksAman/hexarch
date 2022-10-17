@@ -7,11 +7,12 @@ import (
 )
 
 type Config struct {
-	DBHost         string `mapstructure:"DB_HOST"`
-	DBPort         int    `mapstructure:"DB_PORT"`
-	DBUsername     string `mapstructure:"DB_USERNAME"`
-	DBPassword     string `mapstructure:"DB_PASSWORD"`
-	DBDatabaseName string `mapstructure:"DB_DATABASE_NAME_RAW"`
+	DBHost               string `mapstructure:"DB_HOST"`
+	DBPort               int    `mapstructure:"DB_PORT"`
+	DBUsername           string `mapstructure:"DB_USERNAME"`
+	DBPassword           string `mapstructure:"DB_PASSWORD"`
+	DBDatabaseName       string `mapstructure:"DB_DATABASE_NAME"`
+	JSONDatabaseFilepath string `mapstructure:"JSON_DATABASE_FILEPATH"`
 }
 
 // GetPGConnectionString: returns a postgres connection string withouth the database name
