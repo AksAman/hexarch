@@ -13,6 +13,7 @@ type Config struct {
 	DBPassword           string `mapstructure:"DB_PASSWORD"`
 	DBDatabaseName       string `mapstructure:"DB_DATABASE_NAME"`
 	JSONDatabaseFilepath string `mapstructure:"JSON_DATABASE_FILEPATH"`
+	GRPCPort             int    `mapstructure:"GRPC_PORT"`
 }
 
 // GetPGConnectionString: returns a postgres connection string withouth the database name
@@ -27,6 +28,7 @@ func (c *Config) GetDBConnectionString() string {
 
 func LoadConfig() (*Config, error) {
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("/home/aman/projects/golang/src/github.com/AksAman/hexarch")
 	viper.SetConfigType("env")
 	viper.SetConfigName(".env")
 	viper.AutomaticEnv()

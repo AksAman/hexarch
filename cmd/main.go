@@ -5,6 +5,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/AksAman/hexarch/config"
 	"github.com/AksAman/hexarch/internal/adapters/app/api"
 	"github.com/AksAman/hexarch/internal/adapters/core/arithmetic"
@@ -24,6 +26,16 @@ var (
 	appConfig *config.Config
 )
 
+func init() {
+	logger = utils.InitializeLogger("cmd.main")
+
+	var err error
+	appConfig, err = config.LoadConfig()
+	if err != nil {
+		logger.Fatalf("failed to load config: %v", err)
+	}
+}
+
 // ports
 var (
 	// domain/core ports
@@ -34,16 +46,6 @@ var (
 	dbAdapter   rightFrameworkPorts.DBPort
 	gRPCAdapter leftFrameworkPorts.GRPCPort
 )
-
-func init() {
-	logger = utils.InitializeLogger("cmd.main")
-
-	var err error
-	appConfig, err = config.LoadConfig()
-	if err != nil {
-		logger.Fatalf("failed to load config: %v", err)
-	}
-}
 
 func main() {
 	coreAdapter = createCoreAdapter()
@@ -88,5 +90,10 @@ func createJSONDBAdapter() rightFrameworkPorts.DBPort {
 }
 
 func createGRPCAdapter(apiPort appPorts.APIPort) leftFrameworkPorts.GRPCPort {
-	return gRPC.NewAdapter(apiPort)
+	addr := fmt.Sprintf(":%d", appConfig.GRPCPort)
+	adapter, err := gRPC.NewAdapter(apiPort, addr)
+	if err != nil {
+		logger.Fatalf("failed to create grpc adapter: %v", err)
+	}
+	return adapter
 }
